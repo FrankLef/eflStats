@@ -1,11 +1,24 @@
 Package: eflStats
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Tools used in statistical analysis by FL
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Frank Lefever
+Maintainer: Frank Lefever <flefebvre01@hotmail.com>
+Description: Tools used in statistical analysis.
+    Many plots using `ggplot2` aas well as `plotly`.  Also several summaries
+    using the `gt` package.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+Depends: R (>= 4.1.0)
+Suggests:
+    testthat (>= 3.0.4),
+    here (>= 1.0.1)
+Imports:
+    checkmate (>= 2.0.0),
+    assertthat (>= 0.2.1),
+    rlang (>= 0.4.8),
+    dplyr (>= 1.0.2),
+    tibble (>= 3.0.6),
+    modelr (>= 0.1.8),
+    cli (>= 2.1.0)
