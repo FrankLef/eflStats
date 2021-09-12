@@ -46,3 +46,9 @@ docs/
 
 # translation temp files
 po/*~
+
+# tests data
+/tests/testthat/testdata/
+
+# package data
+/data/
