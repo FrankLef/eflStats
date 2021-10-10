@@ -5,8 +5,8 @@ Version: 0.1.0
 Author: Frank Lefever
 Maintainer: Frank Lefever <flefebvre01@hotmail.com>
 Description: Tools used in statistical analysis.
-    Many plots using `ggplot2` aas well as `plotly`.  Also several summaries
-    using the `gt` package.
+    Many plots using `ggplot2` as well as `plotly`.  Also several summaries
+    using the `gt` package and miscellaneous tools.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
