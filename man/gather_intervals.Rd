@@ -17,7 +17,7 @@ gather_intervals(
 
 \item{incl}{Summary variables to include in output.}
 
-\item{excl}{Regex pattern to exclude ariables from output.  Usually to
+\item{excl}{Regex pattern to exclude variables from output.  Usually to
 exclude "*__" variables such as "lp__".}
 
 \item{fun}{\code{ggdist::point_interval} function such as \code{mean_qi}.}

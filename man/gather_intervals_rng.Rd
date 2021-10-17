@@ -4,12 +4,20 @@
 \alias{gather_intervals_rng}
 \title{Gather \code{ggdist::point_interval} with .point, .lower and .upper columns}
 \usage{
-gather_intervals_rng(data, excl = "^.+__", fun = ggdist::mode_qi, ...)
+gather_intervals_rng(
+  data,
+  incl = c(".width", ".point", ".interval"),
+  excl = "^.+__",
+  fun = ggdist::mode_qi,
+  ...
+)
 }
 \arguments{
 \item{data}{\code{ggdist::point_interval} summaries.}
 
-\item{excl}{Regex pattern to exclude ariables from output.  Usually to
+\item{incl}{Summary variables to include in output.}
+
+\item{excl}{Regex pattern to exclude variables from output.  Usually to
 exclude "*__" variables such as "lp__".}
 
 \item{fun}{\code{ggdist::point_interval} function such as \code{mean_qi}.}

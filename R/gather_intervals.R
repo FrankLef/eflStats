@@ -12,7 +12,7 @@
 #'☻
 #' @param data \code{ggdist::point_interval} summaries.
 #' @param incl Summary variables to include in output.
-#' @param excl Regex pattern to exclude ariables from output.  Usually to
+#' @param excl Regex pattern to exclude variables from output.  Usually to
 #' exclude "*__" variables such as "lp__".
 #' @param fun \code{ggdist::point_interval} function such as \code{mean_qi}.
 #' @param ... Extra arguments used by \code{fun}
@@ -32,7 +32,7 @@ gather_intervals <- function(data,
                              excl = "^.+__",
                              fun = ggdist::mode_qi, ...) {
   checkmate::assert_data_frame(data)
-  checkmate::assert_character(incl, min.len = 1L)
+  checkmate::assert_character(incl)
   checkmate::assert_string(excl)
   checkmate::assert_function(fun)
 
@@ -52,10 +52,14 @@ gather_intervals <- function(data,
     fun(data, ...)
   },
   error = function(err) {
-    msg <- sprintf("Error with %s. Did you give a character variable as input?",
-                   deparse1(substitute(fun)))
+    msg <- sprintf("Error with %s.", deparse1(substitute(fun)))
     msg <- paste(errorCondition(err), msg)
-    stop(msg)
+    msg_head <- cli::col_yellow(msg)
+    msg_body <- c("x" = "Did you give a character variable as input?")
+    msg <- paste(msg_head, rlang::format_error_bullets(msg_body), sep = "\n")
+    rlang::abort(
+      message = msg,
+      class = "gather_intervals_error1")
   })
 
   # the grouping variables see code of tidybayes::gather_variables().
@@ -90,7 +94,8 @@ gather_intervals <- function(data,
 #' The code is actually pretty much the same.  See @R-tidybayes.
 #'☻
 #' @param data \code{ggdist::point_interval} summaries.
-#' @param excl Regex pattern to exclude ariables from output.  Usually to
+#' @param incl Summary variables to include in output.
+#' @param excl Regex pattern to exclude variables from output.  Usually to
 #' exclude "*__" variables such as "lp__".
 #' @param fun \code{ggdist::point_interval} function such as \code{mean_qi}.
 #' @param ... Extra arguments used by \code{fun}
@@ -105,44 +110,36 @@ gather_intervals <- function(data,
 #'  data.frame(model = "alpha", a = runif(5), b = rnorm(5), c = rexp(5)),
 #'  data.frame(model = "beta", a = runif(5), b = rnorm(5), c = rexp(5))
 #'  )
-gather_intervals_rng <- function(data, excl = "^.+__",
+gather_intervals_rng <- function(data,
+                                 incl = c(".width", ".point", ".interval"),
+                                 excl = "^.+__",
                                  fun = ggdist::mode_qi, ...) {
   checkmate::assert_data_frame(data)
+  checkmate::assert_character(incl)
   checkmate::assert_string(excl)
-  # checkmate::assert_string(suffix, min.chars = 1)
   checkmate::assert_function(fun)
 
   # get the group before using fun as fun will give ungrouped df
   groups_ <- dplyr::group_vars(data)
-
-  reserved_names <- c(".value", "value")
-  check <- names(data)[names(data) %in% reserved_names]
-  if (length(check)) {
-    msg_head <- cli::col_yellow("The column names must exclude the reserved names.")
-    msg_body <- c("x" = sprintf("Illegal column names: %s", toString(check)),
-                  "i" = sprintf("The reserved names are: %s",
-                                toString(reserved_names)))
-    msg <- paste(msg_head, rlang::format_error_bullets(msg_body), sep = "\n")
-    rlang::abort(
-      message = msg,
-      class = "gather_intervals_rng_error1")
-  }
 
 
   out <- tryCatch({
     fun(data, ...)
   },
   error = function(err) {
-    msg <- sprintf("Error with %s. Did you give a character variable as input?",
-                   deparse1(substitute(fun)))
+    msg <- sprintf("Error with %s.", deparse1(substitute(fun)))
     msg <- paste(errorCondition(err), msg)
-    stop(msg)
+    msg_head <- cli::col_yellow(msg)
+    msg_body <- c("x" = "Did you give a character variable as input?")
+    msg <- paste(msg_head, rlang::format_error_bullets(msg_body), sep = "\n")
+    rlang::abort(
+      message = msg,
+      class = "gather_intervals_rng_error1")
   })
 
 
-
   # add names from ggdist to the groups
-  all_groups <- union(groups_, c(".width", ".point", ".interval"))
+  all_groups <- union(groups_, incl)
 
   # when there is only one variable, .lower and .upper have no
   # prefix and we must prepend their variable name
@@ -156,8 +153,8 @@ gather_intervals_rng <- function(data, excl = "^.+__",
 
 
   # The columns to pivot are the ones NOT in `all_groups` and the ones
-  # with suffix .lower and .upper. We add the suffix .value which is used
-  # by pivot_longer to the other columns
+  # with suffix .lower and .upper.
+  # We add the suffix .value to those pivot columns.
   cols <- c("[.]lower$", "[.]upper$", all_groups)
   rgx <- paste(cols, collapse = "|")
   out <- out %>%
