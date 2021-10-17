@@ -37,6 +37,10 @@ gather_intervals <- function(data,
   checkmate::assert_function(fun)
 
 
+  # get the group before using fun as fun will give ungrouped df
+  groups_ <- dplyr::group_vars(data)
+
+
   # This function is largely inspired by tidybayes::gather_variables().
   # NOTE 1: tidybayes::`gather_variables uses `group_by_at()` which is superseded
   #       by group(by(across(...))).
@@ -56,7 +60,6 @@ gather_intervals <- function(data,
 
   # the grouping variables see code of tidybayes::gather_variables().
   # include variables listed in `incl`
-  groups_ = dplyr::group_vars(data)
   all_groups <- union(groups_, incl)
 
 
@@ -106,7 +109,25 @@ gather_intervals_rng <- function(data, excl = "^.+__",
                                  fun = ggdist::mode_qi, ...) {
   checkmate::assert_data_frame(data)
   checkmate::assert_string(excl)
+  # checkmate::assert_string(suffix, min.chars = 1)
   checkmate::assert_function(fun)
+
+  # get the group before using fun as fun will give ungrouped df
+  groups_ <- dplyr::group_vars(data)
+
+  reserved_names <- c(".value", "value")
+  check <- names(data)[names(data) %in% reserved_names]
+  if (length(check)) {
+    msg_head <- cli::col_yellow("The column names must exclude the reserved names.")
+    msg_body <- c("x" = sprintf("Illegal column names: %s", toString(check)),
+                  "i" = sprintf("The reserved names are: %s",
+                                toString(reserved_names)))
+    msg <- paste(msg_head, rlang::format_error_bullets(msg_body), sep = "\n")
+    rlang::abort(
+      message = msg,
+      class = "gather_intervals_rng_error1")
+  }
+
 
   out <- tryCatch({
     fun(data, ...)
@@ -118,26 +139,39 @@ gather_intervals_rng <- function(data, excl = "^.+__",
     stop(msg)
   })
 
-  groups_ = dplyr::group_vars(data)
+
+
+  # add names from ggdist to the groups
   all_groups <- union(groups_, c(".width", ".point", ".interval"))
 
+  # when there is only one variable, .lower and .upper have no
+  # prefix and we must prepend their variable name
+  the_bounds <- c(".lower", ".upper")
+  the_vars <- setdiff(names(out), c(all_groups, the_bounds))
+  if(length(the_vars) == 1) {
+    out <- out %>%
+      dplyr::rename_with(.cols = the_bounds,
+                         .fn = function(x) paste0(the_vars, x))
+  }
 
-  # rename columns that will be pivoted
-  # rgx <- "[.]lower$|[.]upper$|^[.]width$|^[.]point$|^[.]interval$"
+
+  # The columns to pivot are the ones NOT in `all_groups` and the ones
+  # with suffix .lower and .upper. We add the suffix .value which is used
+  # by pivot_longer to the other columns
   cols <- c("[.]lower$", "[.]upper$", all_groups)
   rgx <- paste(cols, collapse = "|")
   out <- out %>%
       dplyr::rename_with(.cols = !dplyr::matches(rgx),
-                         .fn = function(x) paste(x, "estimate", sep = "."))
+                         .fn = function(x) paste(x, "value", sep = "."))
 
 
   # convert to long format using the name pattern
   # the pattern means that
   # (.*): the first part must have zero or more characters
-  # ([.]estimate$|[.]lower$|[.]upper$): the second part must finish
+  # ([.]value$|[.]lower$|[.]upper$): the second part must finish
   #                                  with .point, lower or .upper
-  rgx_cols <- "[.]estimate$|[.]lower$|[.]upper$"
-  rgx_names <- "(.*)([.]estimate$|[.]lower$|[.]upper$)"
+  rgx_cols <- "[.]value$|[.]lower$|[.]upper$"
+  rgx_names <- "(.*)([.]value$|[.]lower$|[.]upper$)"
   out <- out %>% tidyr::pivot_longer(
     cols = dplyr::matches(rgx_cols),
     names_to = c(".variable", "name"),
