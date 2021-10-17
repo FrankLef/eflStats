@@ -10,6 +10,7 @@ test_that("gather_intervals: Error with point_interval function.", {
                class = "gather_intervals_error1")
 })
 
+
 test_that("gather_intervals: Without grouping variables.", {
   the_width <- c(0.5, 0.75, 0.95)
   df <- data.frame(a = runif(10), b = rnorm(10), c = rexp(10))
@@ -46,6 +47,7 @@ test_that("gather_intervals: With grouping variables.", {
   expect_equal(nrow(summ), nrows)
 })
 
+
 test_that("gather_intervals: Error with point_interval function.", {
   the_width <- c(0.5, 0.75, 0.95)
   df <- data.frame(a = sample(letters, size = 10, replace = TRUE),
@@ -57,7 +59,7 @@ test_that("gather_intervals: Error with point_interval function.", {
 })
 
 
-test_that("gather_intervals_rng: Only one variable", {
+test_that("gather_intervals_rng: Only one variable named 'value'", {
   the_width <- c(0.50, 0.75, 0.95)
   df <- data.frame(alpha = sample(c("a", "b"), size = 10, replace = TRUE),
                    value = runif(10))
