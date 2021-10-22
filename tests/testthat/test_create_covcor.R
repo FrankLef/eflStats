@@ -1,17 +1,17 @@
 test_that("calc_nvars", {
-  # ncomb must be a count
-  rgx <- "Assertion on 'ncomb'"
-  expect_error(calc_nvars(ncomb = 0), regexp = rgx)
+  # npairs must be a count
+  rgx <- "Assertion on 'npairs'"
+  expect_error(calc_nvars(npairs = 0), regexp = rgx)
 
-  # ncomb is invalid
-  expect_error(calc_nvars(ncomb = 4), class = "calc_nvars_error1")
+  # npairs is invalid
+  expect_error(calc_nvars(npairs = 4), class = "calc_nvars_error1")
 
   n <- 2L
-  nvars <- calc_nvars(ncomb = choose(n, 2))
+  nvars <- calc_nvars(npairs = choose(n, 2))
   expect_identical(nvars, n)
 
   n <- 4L
-  nvars <- calc_nvars(ncomb = choose(n, 2))
+  nvars <- calc_nvars(npairs = choose(n, 2))
   expect_identical(nvars, n)
 })
 

@@ -30,7 +30,7 @@ create_cor <- function(cors = 2L, tol = 10e-6) {
   } else {
     checkmate::assert_numeric(cors, lower = -1 + tol, upper = 1 - tol,
                               null.ok = TRUE)
-    # for the given nb of correlations, i.e. nb of combinations of variables
+    # for the given nb of correlations, i.e. nb of pairs of variables,
     # get the nb of variables that must correspond to it.
     nvars <- calc_nvars(length(cors))
   }
@@ -75,17 +75,18 @@ create_cor <- function(cors = 2L, tol = 10e-6) {
 }
 
 
-#' Calculate the number of variables implied by a number of combinations
+#' Calculate the number of variables implied by a number of pairs
 #'
-#' Calculate the number of variables implied by a number of combinations..
+#' Calculate the number of variables implied by a number of pairs.
 #'
-#' When creating combinations of variables, e.g. for a correlation/covariance
-#' matrix, the nb of variables \code{nvars} implied a given number of
-#' combinations \code{ncomb} can be deducted since \code{ncomb = binomial{nvars}{2}}
-#' which gives \code{2 x nvars = ncombs^2 - ncomb} which is a quadratic equation
-#' resolved with \code{ncomb = (sqrt(1 - 4 x (-2 x nvars) + 1) / 2}.
+#' When creating pairs of variables, e.g. for a correlation/covariance
+#' matrix, the nb of variables \code{nvars} implies a given number of
+#' pairs \code{npairs}. \code{npairs} can be determined since
+#' \code{npairs = binomial{nvars}{2}} which gives
+#' \code{2 x nvars = npairs^2 - npairs} which is a quadratic equation that can
+#' be resolved with \code{npairs = (sqrt(1 - 4 x (-2 x nvars) + 1) / 2}.
 #'
-#' @param ncomb Count, the number of combinations.
+#' @param npairs Count, the number of pairs.
 #'
 #' @return Count of the number of variables.
 #' @export
@@ -93,18 +94,18 @@ create_cor <- function(cors = 2L, tol = 10e-6) {
 #' @examples
 #' nvars <- calc_nvars(6)
 #' stopifnot(nvars == 4)
-calc_nvars <- function(ncomb) {
-  checkmate::assert_count(ncomb, positive = TRUE)
+calc_nvars <- function(npairs) {
+  checkmate::assert_count(npairs, positive = TRUE)
 
-  ncomb <- -2 * ncomb
-  assertthat::is.count(-ncomb)
-  nvars <- (sqrt(1 - 4 * ncomb) + 1) / 2
+  npairs <- -2 * npairs
+  assertthat::is.count(-npairs)
+  nvars <- (sqrt(1 - 4 * npairs) + 1) / 2
 
   if(!assertthat::is.count(nvars)) {
-    msg <- "Invalid nb of combinations, `ncomb` is invalid."
+    msg <- "Invalid nb of combinations, `npairs` is invalid."
     msg_head <- cli::col_yellow(msg)
-    msg_body <- c("i" = "Use choose(n, k) to find your nb of combinations.",
-                  "i" = "e.g. 6 combinations required for 4 variables.")
+    msg_body <- c("i" = "Use choose(n, 2) to find your nb of combinations.",
+                  "i" = "e.g. 6 pairs required for 4 variables.")
     msg <- paste(msg_head, rlang::format_error_bullets(msg_body), sep = "\n")
     rlang::abort(
       message = msg,

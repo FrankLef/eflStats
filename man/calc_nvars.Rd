@@ -2,25 +2,26 @@
 % Please edit documentation in R/create_covcor.R
 \name{calc_nvars}
 \alias{calc_nvars}
-\title{Calculate the number of variables implied by a number of combinations}
+\title{Calculate the number of variables implied by a number of pairs}
 \usage{
-calc_nvars(ncomb)
+calc_nvars(npairs)
 }
 \arguments{
-\item{ncomb}{Count, the number of combinations.}
+\item{npairs}{Count, the number of pairs.}
 }
 \value{
 Count of the number of variables.
 }
 \description{
-Calculate the number of variables implied by a number of combinations..
+Calculate the number of variables implied by a number of pairs.
 }
 \details{
-When creating combinations of variables, e.g. for a correlation/covariance
-matrix, the nb of variables \code{nvars} implied a given number of
-combinations \code{ncomb} can be deducted since \code{ncomb = binomial{nvars}{2}}
-which gives \code{2 x nvars = ncombs^2 - ncomb} which is a quadratic equation
-resolved with \code{ncomb = (sqrt(1 - 4 x (-2 x nvars) + 1) / 2}.
+When creating pairs of variables, e.g. for a correlation/covariance
+matrix, the nb of variables \code{nvars} implies a given number of
+pairs \code{npairs}. \code{npairs} can be determined since
+\code{npairs = binomial{nvars}{2}} which gives
+\code{2 x nvars = npairs^2 - npairs} which is a quadratic equation that can
+be resolved with \code{npairs = (sqrt(1 - 4 x (-2 x nvars) + 1) / 2}.
 }
 \examples{
 nvars <- calc_nvars(6)
