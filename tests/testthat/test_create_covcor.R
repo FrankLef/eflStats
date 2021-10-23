@@ -1,21 +1,22 @@
 test_that("calc_nvars", {
   # npairs must be a count
   rgx <- "Assertion on 'npairs'"
-  expect_error(calc_nvars(npairs = 0), regexp = rgx)
+  expect_error(calc_nvars(0), regexp = rgx)
 
   # npairs is invalid
-  expect_error(calc_nvars(npairs = 4), class = "calc_nvars_error1")
-
-  n <- 2L
-  nvars <- calc_nvars(npairs = choose(n, 2))
-  expect_identical(nvars, n)
+  expect_error(calc_nvars(4), class = "calc_nvars_error1")
 
   n <- 4L
-  nvars <- calc_nvars(npairs = choose(n, 2))
+  nvars <- calc_nvars(choose(n, 2))
   expect_identical(nvars, n)
 })
 
 test_that("sim_cor_mat", {
+
+  # nvars must be a count >= 2
+  rgx <- "Assertion on 'nvars - 1'"
+  expect_error(sim_cor_mat(1), regexp = rgx)
+
   mat <- sim_cor_mat(4)
   ev <- eigen(mat, only.values = TRUE)
   expect_true(all(ev$values > 0))
@@ -46,6 +47,10 @@ test_that("create_cor_mat: Input error", {
   rgx <- "Assertion on 'cors'"
   # skip("manual")
   expect_error(create_cor_mat(cors = c(-0.1, 0, 1)), regexp = rgx)
+
+  # invalid correlations which gives a non positive.definite matrix
+  cors <- c(-0.9, -0.6, -0.3, 0.3, 0.6, 0.9)
+  expect_error(create_cor_mat(cors), class = "create_cor_error1")
 })
 
 
@@ -67,12 +72,8 @@ test_that("create_cor_mat: With nb of vars for random matrix.", {
 
 test_that("create_cor_mat: With vector of correlations.", {
 
-  cors <- round(runif(choose(4, 2)), 2)
-  cors <- c(0.69, 0.88, 0.33, 0.12, 0.11, 0.37)
-  # cors <- c(-0.9, -0.6, -0.3, 0.3, 0.6, 0.9)
-  cors <- c(-0.025667622, -0.009168867, 0.065022678,
-            0.189735095, -0.011068128, 0.075086348)
-  # cors <- c(0.5, 0.25, 0.75)
+  # this sequence gives a positivedefinite matrix
+  cors <- seq(from = 0.1, to = 0.9, length.out = 6)
   Rho <- create_cor_mat(cors)
 
   # cat("\n")

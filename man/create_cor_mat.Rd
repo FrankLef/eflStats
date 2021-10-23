@@ -26,8 +26,8 @@ the user or, when \code{cors} is a count, a random correlation matrix of
 size \code{cors} x \code{cors}.
 }
 \examples{
-cors <- c(-0.025667622, -0.009168867, 0.065022678,
- 0.189735095, -0.011068128, 0.075086348)
+# this sequence gives a positive definite matrix
+cors <- seq(from = 0.1, to = 0.9, length.out = 6)
 Rho <- create_cor_mat(cors)
 stopifnot(identical(dim(Rho), c(4L, 4L)))
 Rho <- create_cor_mat(4)
