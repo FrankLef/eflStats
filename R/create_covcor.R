@@ -3,7 +3,7 @@
 #' Create a correlation matrix, given a vector of correlations. If no
 #' vector of correlations, a random correlation matrix 2 x 2 will be created.
 #'
-#' Cretae a positive-definite matrix which represents the correlations given by
+#' Create a positive-definite matrix which represents the correlations given by
 #' the user or, when \code{cors} is a count, a random correlation matrix of
 #' size \code{cors} x \code{cors}.
 #'
@@ -11,60 +11,59 @@
 #' @param tol Tolerance for the output matrix. Change only if you have a good
 #' reason.
 #'
-#' @return Correlation matrix with the corelations \code{cors}, or, if
+#' @seealso calc_nvars sim_cor_mat
+#'
+#' @return Correlation matrix with the correlations \code{cors}, or, if
 #' \code{cors} is a count, a random correlation matrix of \code{cors} variables.
 #' @export
 #'
 #' @examples
-#' Rho <- create_cor(c(0.25, 0.50, 0.75))
-#' stopifnot(identical(dim(Rho), c(3L, 3L)))
-#' Rho <- create_cor(3)
-#' stopifnot(identical(dim(Rho), c(3L, 3L)))
-create_cor <- function(cors = 2L, tol = 10e-6) {
-  checkmate::assert_number(tol, lower = 10e-8, upper = 10e-1)
+#' cors <- c(-0.025667622, -0.009168867, 0.065022678,
+#'  0.189735095, -0.011068128, 0.075086348)
+#' Rho <- create_cor_mat(cors)
+#' stopifnot(identical(dim(Rho), c(4L, 4L)))
+#' Rho <- create_cor_mat(4)
+#' stopifnot(identical(dim(Rho), c(4L, 4L)))
+create_cor_mat <- function(cors = 2L, tol = 1e-6) {
+  checkmate::assert_numeric(cors)
+  # matrixcalc::is.positive.definite uses tolearnce of 1e-8
+  checkmate::assert_number(tol, lower = 1e-6, upper = 1e-1)
 
-  # must get the nb of variables
   if(length(cors) == 1) {
     checkmate::assert_count(cors - 1, positive = TRUE)
     nvars <- cors
+    Rho <- sim_cor_mat(nvars)
   } else {
     checkmate::assert_numeric(cors, lower = -1 + tol, upper = 1 - tol,
                               null.ok = TRUE)
     # for the given nb of correlations, i.e. nb of pairs of variables,
     # get the nb of variables that must correspond to it.
     nvars <- calc_nvars(length(cors))
-  }
-
-  # a count was given, therefore we need to create a random correlation matrix
-  if(length(cors) == 1) {
-    # This was copied from simstudy::genCorMat(), a great package
-    ev <- stats::runif(nvars, 0, 10)
-    Z <- matrix(data = stats::rnorm(nvars^2), nrow = nvars)
-    decomp <- qr(Z)
-    Q <- qr.Q(decomp)
-    R <- qr.R(decomp)
-    d <- diag(R)
-    ph <- d/abs(d)
-    O <- Q %*% diag(ph)
-    Z <- t(O) %*% diag(ev) %*% O
-    Rho <- stats::cov2cor(Z)
-  } else {
     Rho <- diag(x = 1, nrow = nvars)
     Rho[lower.tri(Rho)] <- cors
     Rho <- t(Rho)
     Rho[lower.tri(Rho)] <- cors
   }
 
-  # Rho must be rouded, otherwise matrixcalc::is.positive.definite
+
+  # Rho must be rounded, otherwise matrixcalc::is.positive.definite
   # is very sensitive to very small variation and claim the matrix
   # is not symmetric.
   Rho <- round(Rho, -log10(tol))
 
+  # cat("\n", "inside: after rounding", "\n")
+  # print(Rho)
+  # cat("\n")
+  # cat("\n", "inside: eigen after rounding", "\n")
+  # print(eigen(Rho)$values)
+  # cat("\n")
+
   # matrix must be positive definite
   if (!matrixcalc::is.positive.definite(Rho)) {
-    msg <- "The correlarion matrix is not positive definite."
+    msg <- "The correlation matrix is not positive definite."
     msg_head <- cli::col_yellow(msg)
-    msg_body <- c("i" = "You might want to use Matrix::nearPD().")
+    msg_body <- c("x" = "Correlations have eigen values below the tolerance.",
+                  "i" = "You might want to use sim_cor_mat().")
     msg <- paste(msg_head, rlang::format_error_bullets(msg_body), sep = "\n")
     rlang::abort(
       message = msg,
@@ -86,9 +85,9 @@ create_cor <- function(cors = 2L, tol = 10e-6) {
 #' \code{2 x nvars = npairs^2 - npairs} which is a quadratic equation that can
 #' be resolved with \code{npairs = (sqrt(1 - 4 x (-2 x nvars) + 1) / 2}.
 #'
-#' @param npairs Count, the number of pairs.
+#' @param npairs Count, the number of \strong{pairs}.
 #'
-#' @return Count of the number of variables.
+#' @return Count, number of \strong{variables}.
 #' @export
 #'
 #' @examples
@@ -113,4 +112,43 @@ calc_nvars <- function(npairs) {
   }
 
   as.integer(nvars)
+}
+
+
+
+#' Simulate a correlation matrix from a given nb of variables
+#'
+#' Simulate a correlation matrix from a given nb of variables.
+#'
+#' Simulate a correlation matrix from a given nb of variables by creating
+#' a covariance matrix and transforming it to a correlation matrix with
+#' \code{stats::cov2cor}. The method was copied from \code{simstudy::genCorMat()}
+#' to whom I express my gratitude.
+#'
+#'
+#' @param nvars Positive number of variables, must be >= 2.
+#' @param is_cor TRUE (default): Return the correlation matrix.
+#' FALSE: return the covariance matrix.
+#'
+#' @return Correlation matrix \code{nvars x nvars}
+#' @export
+#'
+#' @examples
+#' mat <- sim_cor_mat(4)
+#' stopifnot(identical(dim(mat), c(4L, 4L)))
+sim_cor_mat <- function(nvars = 2, is_cor = TRUE) {
+  checkmate::assert_count(nvars - 1, positive = TRUE)
+
+  # This was copied from simstudy::genCorMat(), a great package
+  ev <- stats::runif(nvars, 0, 10)  # the eigenvalues
+  Z <- matrix(data = stats::rnorm(nvars^2), nrow = nvars)
+  decomp <- qr(Z)
+  Q <- qr.Q(decomp)
+  R <- qr.R(decomp)
+  d <- diag(R)
+  ph <- d/abs(d)
+  O <- Q %*% diag(ph)  # the orthogonal marix
+  Z <- t(O) %*% diag(ev) %*% O
+
+  if (is_cor) Z <- stats::cov2cor(Z)
 }

@@ -7,10 +7,10 @@
 calc_nvars(npairs)
 }
 \arguments{
-\item{npairs}{Count, the number of pairs.}
+\item{npairs}{Count, the number of \strong{pairs}.}
 }
 \value{
-Count of the number of variables.
+Count, number of \strong{variables}.
 }
 \description{
 Calculate the number of variables implied by a number of pairs.
