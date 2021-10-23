@@ -27,7 +27,7 @@
 create_cor_mat <- function(cors = 2L, tol = 1e-6) {
   checkmate::assert_numeric(cors)
   # matrixcalc::is.positive.definite uses tolearnce of 1e-8
-  checkmate::assert_number(tol, lower = 1e-6, upper = 1e-1)
+  checkmate::assert_number(tol, lower = 1e-6, upper = 1e-4)
 
   if(length(cors) == 1) {
     checkmate::assert_count(cors - 1, positive = TRUE)
@@ -38,7 +38,7 @@ create_cor_mat <- function(cors = 2L, tol = 1e-6) {
     # for the given nb of correlations, i.e. nb of pairs of variables,
     # get the nb of variables that must correspond to it.
     nvars <- calc_nvars(length(cors))
-    Rho <- diag(x = 1, nrow = nvars)
+    Rho <- diag(nrow = nvars)
     Rho[lower.tri(Rho)] <- cors
     Rho <- t(Rho)
     Rho[lower.tri(Rho)] <- cors
@@ -58,11 +58,14 @@ create_cor_mat <- function(cors = 2L, tol = 1e-6) {
   # cat("\n")
 
   # matrix must be positive definite
-  if (!matrixcalc::is.positive.definite(Rho)) {
+  ev <- eigen(Rho, only.values = TRUE)
+  check <- ev$values < tol
+  if (any(check)) {
     msg <- "The correlation matrix is not positive definite."
     msg_head <- cli::col_yellow(msg)
     msg_body <- c("x" = "Correlations have eigen values below the tolerance.",
-                  "i" = "You might want to use sim_cor_mat().")
+                  "i" = sprintf("There are %d eigen values below tolerance = %f.",
+                                sum(check), tol))
     msg <- paste(msg_head, rlang::format_error_bullets(msg_body), sep = "\n")
     rlang::abort(
       message = msg,

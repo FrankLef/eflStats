@@ -17,7 +17,6 @@ Suggests:
 Imports:
     checkmate (>= 2.0.0),
     assertthat (>= 0.2.1),
-    matrixcalc (>= 1.0-5),
     cli (>= 3.0.1),
     rlang (>= 0.4.8),
     dplyr (>= 1.0.2),
