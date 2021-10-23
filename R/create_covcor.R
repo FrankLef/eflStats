@@ -34,8 +34,7 @@ create_cor_mat <- function(cors = 2L, tol = 1e-6) {
     nvars <- cors
     Rho <- sim_cor_mat(nvars)
   } else {
-    checkmate::assert_numeric(cors, lower = -1 + tol, upper = 1 - tol,
-                              null.ok = TRUE)
+    checkmate::assert_numeric(cors, lower = -1 + tol, upper = 1 - tol)
     # for the given nb of correlations, i.e. nb of pairs of variables,
     # get the nb of variables that must correspond to it.
     nvars <- calc_nvars(length(cors))
