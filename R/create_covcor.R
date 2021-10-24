@@ -18,12 +18,15 @@
 #' @export
 #'
 #' @examples
+#' nvars <- 4  # nb of variables
+#' npairs <- choose(nvars, 2)  # nb of pairs that can be made with nvars
 #' # this sequence gives a positive definite matrix
-#' cors <- seq(from = 0.1, to = 0.9, length.out = 6)
+#' cors <- seq(from = 0.1, to = 0.9, length.out = npairs)
 #' Rho <- create_cor_mat(cors)
-#' stopifnot(identical(dim(Rho), c(4L, 4L)))
-#' Rho <- create_cor_mat(4)
-#' stopifnot(identical(dim(Rho), c(4L, 4L)))
+#' stopifnot(all.equal(dim(Rho), c(nvars, nvars)))
+#' # create matrix of random correlations for nvars variables
+#' Rho <- create_cor_mat(nvars)
+#' stopifnot(all.equal(dim(Rho), c(nvars, nvars)))
 create_cor_mat <- function(cors = 2L, tol = 1e-6) {
   checkmate::assert_numeric(cors)
   # matrixcalc::is.positive.definite uses tolearnce of 1e-8
