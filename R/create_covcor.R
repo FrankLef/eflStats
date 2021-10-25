@@ -27,10 +27,9 @@
 #' # create matrix of random correlations for nvars variables
 #' Rho <- create_cor_mat(nvars)
 #' stopifnot(all.equal(dim(Rho), c(nvars, nvars)))
-create_cor_mat <- function(cors = 2L, tol = 1e-6) {
+create_cor_mat <- function(cors = 2L, tol = .Machine$double.eps^0.5) {
   checkmate::assert_numeric(cors)
-  # matrixcalc::is.positive.definite uses tolearnce of 1e-8
-  checkmate::assert_number(tol, lower = 1e-6, upper = 1e-4)
+  checkmate::assert_number(tol, lower = .Machine$double.eps^0.5, upper = 1e-4)
 
   if(length(cors) == 1) {
     checkmate::assert_count(cors - 1, positive = TRUE)
@@ -48,9 +47,8 @@ create_cor_mat <- function(cors = 2L, tol = 1e-6) {
   }
 
 
-  # Rho must be rounded, otherwise matrixcalc::is.positive.definite
-  # is very sensitive to very small variation and claim the matrix
-  # is not symmetric.
+  # Rho must be rounded,
+  # the eigen values test is sensitive to very small variations
   Rho <- round(Rho, -log10(tol))
 
   # cat("\n", "inside: after rounding", "\n")
@@ -101,9 +99,7 @@ create_cor_mat <- function(cors = 2L, tol = 1e-6) {
 calc_nvars <- function(npairs) {
   checkmate::assert_count(npairs, positive = TRUE)
 
-  npairs <- -2 * npairs
-  assertthat::is.count(-npairs)
-  nvars <- (sqrt(1 - 4 * npairs) + 1) / 2
+  nvars <- (sqrt(1 - 4 * (-2 * npairs)) + 1) / 2
 
   if(!assertthat::is.count(nvars)) {
     msg <- "Invalid nb of combinations, `npairs` is invalid."

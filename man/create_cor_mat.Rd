@@ -4,7 +4,7 @@
 \alias{create_cor_mat}
 \title{Create a correlation matrix, given a vector of correlations}
 \usage{
-create_cor_mat(cors = 2L, tol = 1e-06)
+create_cor_mat(cors = 2L, tol = .Machine$double.eps^0.5)
 }
 \arguments{
 \item{cors}{A vector of correlations of a the nb of variables.}
